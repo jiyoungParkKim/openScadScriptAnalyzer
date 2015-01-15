@@ -1,6 +1,10 @@
 /**
  * Main application routes
+ * 
+ * --All routes or URL who concern the API are redirected in /api/thingiverses
+ * --otherwise the return code is 404
  */
+
 
 'use strict';
 

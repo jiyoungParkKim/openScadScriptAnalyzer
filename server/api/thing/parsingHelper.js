@@ -1,5 +1,12 @@
 var utils = require('./thingiverseUtils');
 var scadAnalyzer = require('./openScadAnalyzer');
+var winston = require('winston');
+var logger = new (winston.Logger)({
+    transports: [
+    //  new (winston.transports.Console)(),
+      new (winston.transports.File)({ filename: 'logs.log' })
+    ]
+  });
 
 function ParsingHelper(socketMsgHelper, job){
 
@@ -21,11 +28,12 @@ function ParsingHelper(socketMsgHelper, job){
 	}
 
 	this.parse = function(){
-		
+		logger.info('Fichier ParsingHelper.js | fonction parse');
 		self.lock = true;
 		var file = targets.pop();
 		console.log('[PARSING] ' + file.name + ' : ' + file.id);
 		scadAnalyzer.parse(file, function(err, rtn){
+			logger.info('Fichier ParsingHelper.js | fonction scadAnalyzer.parse');
 			if(err){
 				self.lock = false;
 				console.log(err)
@@ -58,6 +66,7 @@ function ParsingHelper(socketMsgHelper, job){
 	var interval;
 	var counter = 0;
 	this.startParsing = function(){
+		logger.info('Fichier ParsingHelper.js | fonction startParsing');
 		if(!self.lock){
 			self.interval = setInterval( function() {
 
@@ -105,6 +114,7 @@ function ParsingHelper(socketMsgHelper, job){
 }
 
 exports.newParsingHelper = function(socketMsgHelper, job){
+	logger.info('Fichier ParsingHelper.js | fonction newParsingHelper');
 	return new ParsingHelper(socketMsgHelper, job);
 }
 

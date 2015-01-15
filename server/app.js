@@ -10,12 +10,22 @@ process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 var express = require('express');
 var mongoose = require('mongoose');
 var config = require('./config/environment');
-
+var winston = require('winston');
+var logger = new (winston.Logger)({
+    transports: [
+    //  new (winston.transports.Console)(),
+      new (winston.transports.File)({ filename: 'logs.log' })
+    ]
+  });
+//logger.log('info', 'Hello distributed log files!');
+logger.info('application launched');
 // Connect to database
 mongoose.connect(config.mongo.uri, config.mongo.options);
 
 // Populate DB with sample data
 if(config.seedDB) { require('./config/seed'); }
+
+//winston.log('info',"App-js : application start on :"+process.env.NODE_ENV );
 
 // Setup server
 var app = express();
@@ -26,6 +36,7 @@ var socketio = require('socket.io')(server, {
 });
 require('./config/socketio')(socketio);
 require('./config/express')(app);
+// routes are defined in the next line
 require('./routes')(app);
 
 // Start server

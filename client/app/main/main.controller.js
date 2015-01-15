@@ -2,6 +2,8 @@
 
 angular.module('openScadAnalyzerApp')
   .controller('MainCtrl', function ($scope, $rootScope, $http, socket) {
+    //winston.log('info',"controller.js");
+
     // $scope.awesomeThings = [];
 
     // $http.get('/api/things').success(function(awesomeThings) {
@@ -25,9 +27,9 @@ angular.module('openScadAnalyzerApp')
     //   socket.unsyncUpdates('thing');
     // });
 
-
     $scope.data = {};
     $http.get('/api/thingiverses/stat').success(function(data) {
+      //logger.info('main.controller.js');
       $scope.data = data;
       $scope.parsed = (data.parsed/data.total)*100;
       $scope.failed = (data.failed/data.total)*100;

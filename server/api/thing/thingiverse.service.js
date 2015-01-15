@@ -21,12 +21,25 @@ parser.startParsing();
 
 var cliCallback;
 
+var winston = require('winston');
+var logger = new (winston.Logger)({
+    transports: [
+    //  new (winston.transports.Console)(),
+      new (winston.transports.File)({ filename: 'logs.log' })
+    ]
+  });
+
+var json2csv = require('json2csv');
+
+
 exports.setCallback = function(_callback){
 	cliCallback = _callback;
 }
 
 exports.batch = function(tag, limitCnt, cb){
+	logger.info('Fichier thingiverse.service.js | fonction batch ');
 	requestHelper.getTotalCntOfThings(tag, function(err, totalPageCnt, totalRemoteThingsCnt){
+		logger.info('Fichier thingiverse.service.js | fonction batch - getTotalCntOfThings');
 		console.log('totalRemoteThingsCnt : '+ totalRemoteThingsCnt);
 		if(err) throw err; 
 		dao.findTags(tag, function(err, tags){
@@ -46,6 +59,8 @@ exports.batch = function(tag, limitCnt, cb){
 	})
 }
 
+
+
 /*
 ---- dataBack ex ----
 socket : [object Object]
@@ -58,6 +73,7 @@ maxCnt : 5
 ---------------------
  */
 function createThings(dataBag){
+	logger.info('Fichier thingiverse.service.js | fonction createThings(dataBag){');
 	//dataBag.toString();
 	for(var i = 0 ; i < dataBag.maxCnt ; i ++){
 		var thing_id = dataBag.thingsToDownload.pop();
@@ -73,6 +89,7 @@ function createThings(dataBag){
 }
 
 function createOneThing(dataBag, index, thing_id){
+	logger.info('Fichier thingiverse.service.js | fonction createOneThing(dataBag){');
 	// 1. download thing json data from remote site
 	Thing.getThisFromRemote(thing_id, function(err, thing){
 		if(err){
@@ -163,6 +180,7 @@ function createOneThing(dataBag, index, thing_id){
 }
 
 function downloadScadFiles(files, thing_id, callback){
+	logger.info('Fichier thingiverse.service.js | fonction downloadScadFiles');
 	_.each(files, function(_id){
 		
 		File
@@ -182,6 +200,7 @@ function downloadScadFiles(files, thing_id, callback){
 function isNumber(n) { return /^-?[\d.]+(?:e-?\d+)?$/.test(n); } 
 
 exports.list = function(tag, page, callback){
+	logger.info('Fichier thingiverse.service.js | fonction list');
 	console.log('tag ' + tag)
 	var skip = (page - 1 )* 20 ;
   	var opts = {skip : skip, limit : 20, sort:{modified:-1}};
@@ -220,7 +239,68 @@ exports.list = function(tag, page, callback){
 	}
 };
 
+exports.listByState = function(nbResults, state, callback){
+	logger.info('Fichier thingiverse.service.js | fonction listByState');
+	
+	var pops = '_thing';
+	var defaults = {skip : 0, limit : 50};
+
+	if(isNumber(nbResults)){
+		var opts = {limit : nbResults};
+	}
+	opts = _.extend({}, defaults, opts);
+
+	if(state == 2 || state == 1) {
+		var filter = {'isParsed': state};
+	}
+
+	filter = _.extend({}, filter);
+
+	var cntQry = File.find(filter);
+	var qry = File.find(filter).populate(pops);
+
+	if (opts.fields) {
+		qry = qry.select(opts.fields);
+	}
+
+	if (opts.sort) {
+		qry = qry.sort(opts.sort);
+	}
+
+  qry = qry.limit(opts.limit).skip(opts.skip);
+
+  async.parallel(
+    [
+      function (callback) {
+        cntQry.count(callback);
+      },
+      function (callback) {
+        qry.exec(callback);
+      }
+    ],
+    function (err, results) {
+      if (err) return callback(err);
+      var count = 0, ret = [];
+
+      _.each(results, function (r) {
+
+        if (typeof(r) == 'number') {
+          count = r;
+        } else if (typeof(r) != 'number') {
+          ret = r;
+        }
+      });
+
+      callback(null, {totalCount : count, results : ret});
+    }
+  );
+
+  return qry;
+
+};
+
 exports.stat = function(callback){
+	logger.info('Fichier thingiverse.service.js | fonction stat');
 	async.parallel([
 		function(callback){
 			File.find({name:/scad/, $or: [{isParsed:0, isParsed:2}]}).count().exec(callback);
@@ -248,6 +328,7 @@ exports.stat = function(callback){
 
 //////////////////////////////////////////////////////////////////////////////////
 exports.reparse = function(mode, limit, filesize, callback){
+	logger.info('Fichier thingiverse.service.js | fonction reparse');
 	var query;
 	if(mode === 'parseAllFailedFiles'){
 		query = {name:/scad/, isParsed : 0, size : {$lt:filesize}};// 0 == failed
@@ -270,6 +351,7 @@ exports.reparse = function(mode, limit, filesize, callback){
 }
 
 exports.parseOneScad = function(callback){
+	logger.info('Fichier thingiverse.service.js | fonction parseOneScad');
 	File.findById(_id, function(err, file){
 		if(err) callback(err, null);
 		else
@@ -290,6 +372,8 @@ exports.parseOneScad = function(callback){
 }
 
 exports.distinctIncludedFiles = function(regExp, callback){
+	logger.info('Fichier thingiverse.service.js | fonction distinctIncludedFiles');
+
 	File.find({content:regExp}, function(err, files){
 		if(err) callback(err, null);
 		else
@@ -313,7 +397,70 @@ exports.distinctIncludedFiles = function(regExp, callback){
 	});// find
 }
 
+/* Function export statistics at csv format */
+exports.generateGlobalStatistics = function(idThing, idFile, callback) {
+	logger.info('Fichier thingiverse.service.js | fonction generateGlobalStatistics');
+	var pops = '_thing';
+	if(idThing == 0) {
+		var filter = {'isParsed': 1};
+		var nameFile = 'tests/statisticsThings.csv';
+	} else {
+		var filter = {'isParsed': 1, 'id': idFile};
+		var nameFile = 'tests/'+ idThing + '.csv';
+	}
+	filter = _.extend({}, filter);
+	var defaults = {skip : 0};
+	var fields = {fields : 'stat id'};
+	var opts = _.extend({}, defaults, fields);
+	var qry = File.find(filter).populate(pops);
+	qry = qry.select(opts.fields);
+	qry = qry.skip(opts.skip);
+	async.parallel(
+	[
+		function (callback) {
+			qry.exec(callback);
+		}
+	],
+	function (err, results) {
+		if (err) return callback(err);
+		var count = 0;
+		var arrayForCsv = [];
+		_.each(results, function (r) {
+			if (typeof(r) != 'number') {
+				for(var i=0; i < r.length; i++ ){
+					for(var j=0; j <r[i].stat.length; j++ ){
+						//print(r[i].stat[j]);
+						var lineForCsv = {};
+						if(j==0) {
+							lineForCsv['id'] = r[i].id;
+						} else {
+							lineForCsv['id'] = "";
+						}			
+						lineForCsv['globalArgCnt']  		= r[i].stat[j].globalArgCnt;
+						lineForCsv['mostComplexFuncArgCnt'] = r[i].stat[j].mostComplexFuncArgCnt;
+						lineForCsv['totalFuncCnt'] 			= r[i].stat[j].totalFuncCnt;
+						lineForCsv['mostComplexModuleArgCnt'] = r[i].stat[j].mostComplexModuleArgCnt;
+						lineForCsv['totalModuleCnt'] 		= r[i].stat[j].totalModuleCnt;
+						//print(lineForCsv);
+						arrayForCsv.push( lineForCsv);
+					}
+					
+				}
+			}
+		});
+		convertJson2Csv(arrayForCsv, nameFile, function() {
+			callback();
+		});
+	});
+}
 //////////////////////////////////////////////////////////////////////////////////
+
+function toObject(arr) {
+  var rv = {};
+  for (var i = 0; i < arr.length; ++i)
+    if (arr[i] !== undefined) rv[i] = arr[i];
+  return rv;
+}
 
 function print(msg){
 	console.log(msg);
@@ -323,3 +470,21 @@ function handleError(title, err){
 	console.log('!!! ' + title + ' : ' + err);
 }
 
+function convertJson2Csv(dataJson, nameFile, callback){
+	//print(dataJson);
+	json2csv({data: dataJson, fields: ['id', 'globalArgCnt', 'mostComplexFuncArgCnt', 'totalFuncCnt', 'mostComplexModuleArgCnt', 'totalModuleCnt']}, function(err, csv) {
+		if (err) console.log(err);
+		//console.log(csv);
+		var fs = require('fs');
+		fs.writeFile(nameFile, replaceAll("\"\"", "", csv), function(err) {
+		if (err) throw err;
+		console.log('file ' + nameFile + ' saved');
+		callback();
+		});
+	});
+
+}
+
+function replaceAll(find, replace, str) {
+  return str.replace(new RegExp(find, 'g'), replace);
+}

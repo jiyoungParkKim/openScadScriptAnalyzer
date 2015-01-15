@@ -1,7 +1,7 @@
 'use strict';
 
 describe('Controller: MainCtrl', function () {
-
+  //winston.log('info',"main.controller.spec.js");
   // load the controller's module
   beforeEach(module('openScadAnalyzerApp'));
   beforeEach(module('socketMock'));

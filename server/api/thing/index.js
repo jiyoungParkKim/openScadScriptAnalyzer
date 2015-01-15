@@ -2,7 +2,13 @@
 
 var express = require('express');
 var controller = require('./thingiverse.controller');
-
+var winston = require('winston');
+var logger = new (winston.Logger)({
+    transports: [
+    //  new (winston.transports.Console)(),
+      new (winston.transports.File)({ filename: 'logs.log' })
+    ]
+  });
 var router = express.Router();
 
 // router.get('/', controller.index);

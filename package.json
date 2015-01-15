@@ -23,7 +23,12 @@
     "socket.io": "~1.0.6",
     "socketio-jwt": "^2.0.2",
     "serve-favicon": "~2.1.6",
-    "underscore": "^1.6.0"
+    "underscore": "^1.6.0",
+    "json2csv":"^2.2.1",
+    "winston":"latest",
+    "diff":"latest",
+    "colors":"latest",
+    "node-regexp":"latest"
   },
   "devDependencies": {
     "grunt": "~0.4.4",
@@ -78,15 +83,16 @@
     "karma-ng-html2js-preprocessor": "~0.1.0",
     "supertest": "~0.11.0",
     "should": "~3.3.1"
-  },
+  },	
   "engines": {
     "node": ">=0.10.0"
   },
   "scripts": {
     "start": "node server/app.js",
+    "console": "node server/api/thing/Cli.js",
     "test": "grunt test",
     "update-webdriver": "node node_modules/grunt-protractor-runner/node_modules/protractor/bin/webdriver-manager update",
-    "postinstall": "./node_modules/bower/bin/bower install -F"
+    "postinstall": "bower install"
   },
   "private": true
 }

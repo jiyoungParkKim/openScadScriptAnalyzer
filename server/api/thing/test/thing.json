@@ -1,0 +1,37 @@
+{ 
+	"id" : 378736,
+
+	"stats": [
+
+		{
+			"totalModuleCnt":0,
+			"mostComplexModuleArgCnt":0,
+			"totalFuncCnt":0,
+			"mostComplexFuncArgCnt":0,
+			"globalArgCnt":2
+		},
+		{
+			"totalModuleCnt":0,
+			"mostComplexModuleArgCnt":0,
+			"totalFuncCnt":0,
+			"mostComplexFuncArgCnt":0,
+			"globalArgCnt":5
+		},
+		
+		{
+			"totalModuleCnt":0,
+			"mostComplexModuleArgCnt":0,
+			"totalFuncCnt":0,
+			"mostComplexFuncArgCnt":0,
+			"globalArgCnt":3
+		},
+		
+		{
+			"totalModuleCnt":4,
+			"mostComplexModuleArgCnt":3,
+			"totalFuncCnt":0,
+			"mostComplexFuncArgCnt":0,
+			"globalArgCnt":3
+		}
+	]
+}

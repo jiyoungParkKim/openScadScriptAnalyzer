@@ -131,6 +131,122 @@ body {
 				    <tab heading="Context">
 				    	 <pre class="_DarkSlateGray White"><code data-language="json">{{getContext(scad.context)}}</code></pre>
 				    </tab>
+				    <!-- tab configurator -->
+				    <tab heading="Configurator">
+				    	<!-- get parameters from the scad content -->
+					  	<form class="configurator form-horizontal" ng-init="parameters = getConfigurator(scad.content)">
+					  		<div ng-repeat="scad in parameters">
+						              
+						      <h3>{{ scad.TabName }}</h3><hr/>
+						      
+						      <div ng-repeat="param in scad.Parameters">
+						        <!-- AFFECTATIONS -->
+						        <div ng-repeat="affectation in param.affectation">
+						          <div class="form-group">
+						            <span class="text-muted col-sm-offset-0">  // [Affectation] {{ affectation.description }}</span><br/>
+						            <label for="affect_{{ affectation.name }}" class="col-sm-2">{{ affectation.name }}</label>
+						            <div class="col-sm-4">
+						              <input type="text" class="form-control" id="affect_{{ affectation.name }}" value="{{ affectation.value }}">
+						            </div>
+						          </div>
+						        </div><!-- END AFFECTATIONS-->
+						        
+						        <!-- SLIDERS -->
+						        <div ng-repeat="sliders in param.sliders">
+						          <div class="form-group">
+						            <span class="text-muted col-sm-offset-0"> // [Slider] {{ sliders.description }}</span><br/>
+						            <label for="slider_{{ sliders.name }}" class="col-sm-2">{{ sliders.name }}</label>
+						            <div class="col-sm-1">
+
+						             <input class="lesSliders" type="text" data-slider-min="{{sliders.min}}" data-slider-max="{{sliders.max}}" data-slider-step="1" data-slider-value="{{sliders.def}}"/>
+						              
+						            </div>
+						          </div>
+						        </div><!-- END SLIDERS -->
+						        
+						        <!-- DROPDOWN -->
+						        <div ng-repeat="dropdown in param.dropdown">
+						          <div class="form-group">
+						            <span class="text-muted col-sm-offset-0">  // [dropdown] {{ dropdown.description }}</span><br/>
+						            <label for="slider_{{ sliders.name }}" class="col-sm-2">{{ dropdown.name }}</label>
+						            
+						            <div class="dropdown col-sm-4">
+						                  <select class="form-control" name="{{dropdown.name}}">
+						                    <option ng-selected="{{dropdown.def == filterCondition.item}}"
+						                            ng-repeat="item in dropdown.values"
+						                            value="{{item}}">
+						                      {{item}}
+						                    </option>
+						                  </select>
+						            </div>
+						            
+						          </div>
+						          
+						        </div><!-- END DROPDOWN -->
+
+
+						        <!-- IMAGETOSURFACE -->
+						        <div ng-repeat="imgtosurface in param.imageToSurface">
+						          <div class="form-group">
+						            <span class="text-muted col-sm-offset-0">  // [imageToSurface] {{ imgtosurface.description }}</span>
+						            <br/>
+						            <div class="imgtosurface">
+							            <div class="col-sm-4">
+					                  	<label for="imgtosurface_{{ imgtosurface.name }}">{{ imgtosurface.name }}</label>
+							              <input type="file" class="form-control" id="imgtosurface_{{ imgtosurface.name }}" value="{{ imgtosurface.value }}">
+							            </div>
+
+							            <div class="col-sm-1">
+					                  	<label for="imgtosurface_width">Width</label>
+							              <input type="text" class="form-control" id="imgtosurface_width" value="{{ imgtosurface.width }}">
+							            </div>
+
+							            <div class="col-sm-1">
+					                  	<label for="imgtosurface_height">Height</label>
+							              <input type="text" class="form-control" id="imgtosurface_height" value="{{ imgtosurface.height }}">
+							            </div>
+						            </div>
+						            
+						          </div>
+						          
+						        </div><!-- END IMAGETOSURFACE -->
+						        
+
+						        <!-- IMAGETOARRAY -->
+						        <div ng-repeat="imageToArray in param.imageToArray">
+						          <div class="form-group">
+						            <span class="text-muted col-sm-offset-0">  // [imageToArray] {{ imgtosurface.description }}</span>
+						            <br/>
+						            <div class="imageToArray">
+							            <div class="col-sm-4">
+					                  	<label for="imageToArray_{{ imageToArray.name }}">{{ imageToArray.name }}</label>
+							              <input type="file" class="form-control" id="imageToArray_{{ imageToArray.name }}" value="{{ imageToArray.value }}">
+							            </div>
+
+							            <div class="col-sm-1">
+					                  	<label for="imageToArray_path">Path</label>
+							              <input type="text" class="form-control" id="imageToArray_width" value="{{ imageToArray.paths }}">
+							            </div>
+
+							            <div class="col-sm-1">
+					                  	<label for="imageToArray_cols">Cols</label>
+							              <input type="text" class="form-control" id="imageToArray_height" value="{{ imageToArray.cols }}">
+							            </div>
+
+							            <div class="col-sm-2">
+					                  	<label for="imageToArray_invertcolors">Invert colors</label><br>
+							              <input type="checkbox" id="imageToArray_invertcolors" name="imageToArray_invertcolors">
+							            </div>
+						            </div>
+						            
+						          </div>
+						          
+						        </div><!-- END IMAGETOARRAY -->
+						      </div>
+
+						    </div>
+					    </form>
+				    </tab>
 			    </tabset>
 			</div><!-- toggle 1 -->
 			</div><!-- ng-repeat -->
@@ -147,3 +263,5 @@ body {
 </p>
 
 </div>
+
+{{init_sliders()}}

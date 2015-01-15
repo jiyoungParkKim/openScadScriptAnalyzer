@@ -1,0 +1,38 @@
+{ 
+  "id": 376809,
+
+  "Parameters":  [
+    {
+        "TabName": "Global",
+        "Parameters": {
+            "thingParams": {
+                "affectation": [
+                    {
+                        "name": "MH",
+                        "value": "1.5",
+                        "description": ""
+                    },
+                    {
+                        "name": "CD",
+                        "value": "4",
+                        "description": "Cable Radius"
+                    }
+                ],
+                "sliders": [
+                    {
+                        "name": "OD",
+                        "min": "10",
+                        "def": "60",
+                        "max": "160",
+                        "description": "Opening (in degrees)"
+                    }
+                ],
+                "dropdown": [],
+                "imageToSurface": [],
+                "imageToArray": [],
+                "polygons": []
+            }
+        }
+    }
+]
+}
